@@ -1,9 +1,9 @@
 #include <SoftwareSerial.h>
 
-#define RX 21
-#define TX 20
+#define RX 0
+#define TX 1
 
-   g_gps( RX, TX );
+SoftwareSerial  g_gps( RX, TX );
 
 void setupSoftwareSerial(){
   g_gps.begin(9600);
