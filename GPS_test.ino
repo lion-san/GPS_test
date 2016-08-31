@@ -3,7 +3,7 @@
 #define RX 21
 #define TX 20
 
-SoftwareSerial g_gps( RX, TX );
+   g_gps( RX, TX );
 
 void setupSoftwareSerial(){
   g_gps.begin(9600);
@@ -27,8 +27,12 @@ void loop() {
   // put your main code here, to run repeatedly:
   if(g_gps.available()){
     Serial.write(g_gps.read());
-  }
 
-  delay(100);
+    Serial.println("GPS OK");
+  }
+  
+  Serial.println("GPS Wait");
+
+  delay(1000);
 
 }
