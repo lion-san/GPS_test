@@ -1,12 +1,13 @@
 #include <SoftwareSerial.h>
 
-#define RX 10
-#define TX 11
+#define RX 8
+#define TX 9
 
 SoftwareSerial  g_gps( RX, TX );
 
 void setupSoftwareSerial(){
   g_gps.begin(9600);
+
 }
 
 void setup() {
@@ -17,9 +18,11 @@ void setup() {
     ;
   }
 
+  setupSoftwareSerial();
+
+
   Serial.println("GPS Start");
 
-  setupSoftwareSerial();
 
 }
 
@@ -27,12 +30,15 @@ void loop() {
   // put your main code here, to run repeatedly:
   if(g_gps.available()){
     Serial.write(g_gps.read());
+    //Serial.println(g_gps.read());
 
-    Serial.println("GPS OK");
+    //Serial.println("GPS OK");
   }
-  
-  Serial.println("GPS Wait");
 
-  delay(1000);
+  else{
+  
+    //Serial.println("GPS Wait");
+  }
+  //delay(1000);
 
 }
