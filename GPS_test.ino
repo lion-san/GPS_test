@@ -1,7 +1,7 @@
 #include <SoftwareSerial.h>
 
-#define RX 0
-#define TX 1
+#define RX 10
+#define TX 11
 
 SoftwareSerial  g_gps( RX, TX );
 
