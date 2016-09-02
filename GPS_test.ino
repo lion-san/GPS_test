@@ -1,7 +1,7 @@
 #include <SoftwareSerial.h>
 
-#define RX 10
-#define TX 11
+#define RX 8
+#define TX 9
 
 #define SENTENCES_BUFLEN      82        // GPSのメッセージデータバッファの個数
 
@@ -9,6 +9,7 @@ SoftwareSerial  g_gps( RX, TX );
 
 void setupSoftwareSerial(){
   g_gps.begin(9600);
+
 }
 
 void setup() {
@@ -19,9 +20,11 @@ void setup() {
     ;
   }
 
+  setupSoftwareSerial();
+
+
   Serial.println("GPS Start");
 
-  setupSoftwareSerial();
 
 }
 
@@ -37,7 +40,11 @@ void loop() {
   
   Serial.println("GPS Wait");
 
-  delay(1000);
+  else{
+  
+    //Serial.println("GPS Wait");
+  }
+  //delay(1000);
 
 }
 
