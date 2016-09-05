@@ -5,8 +5,14 @@
 
 #define SENTENCES_BUFLEN      82        // GPSのメッセージデータバッファの個数
 
+//=== Global ===========================================
 SoftwareSerial  g_gps( RX, TX );
 char head[] = "$GPRMC";
+char buf[10];
+int SentencesNum = 0;                   // GPSのセンテンス文字列個数
+byte SentencesData[SENTENCES_BUFLEN] ;  // GPSのセンテンスデータバッファ
+//======================================================
+
 
 void setupSoftwareSerial(){
   g_gps.begin(9600);
@@ -38,15 +44,13 @@ void loop() {
   //}
 
   //receiveGPS();
-
-  int SentencesNum = 0;                   // GPSのセンテンス文字列個数
-  char SentencesData[SENTENCES_BUFLEN] ;  // GPSのセンテンスデータバッファ
   char dt ;
 
    // センテンスデータが有るなら処理を行う
    if (g_gps.available()) {
         // 1バイト読み出す
         dt = g_gps.read() ;
+        //Serial.write(dt);//Debug ALL
         // センテンスの開始
         if (dt == '$') SentencesNum = 0 ;
         
@@ -59,10 +63,11 @@ void loop() {
           // センテンスの最後(LF=0x0Aで判断)
           if (dt == 0x0a || SentencesNum >= SENTENCES_BUFLEN) {
             // センテンスのステータスが"有効"になるまで待つ
-            if ( gpsIsReady(SentencesData) )
+            if ( gpsIsReady() )
             {
                // 有効になったら書込み開始
-               Serial.println( SentencesData );
+               Serial.print("O:");
+               Serial.print( (char *)SentencesData );
             }
           }
         }
@@ -76,17 +81,18 @@ void loop() {
 /**
  * receiveGPS
  */
-char *receiveGPS()
+/*char *receiveGPS()
 {
-
-  int SentencesNum = 0;                   // GPSのセンテンス文字列個数
-  byte SentencesData[SENTENCES_BUFLEN] ;  // GPSのセンテンスデータバッファ
   char dt ;
+  
+  //初期化
+  memset(SentencesData, 0x00, SENTENCES_BUFLEN) ;
 
    // センテンスデータが有るなら処理を行う
    if (g_gps.available()) {
         // 1バイト読み出す
         dt = g_gps.read() ;
+
         // センテンスの開始
         if (dt == '$') SentencesNum = 0 ;
         
@@ -108,17 +114,17 @@ char *receiveGPS()
         }
    }
  
-}
+}*/
 
 /**
  * gpsStatusCheck
  */
-boolean gpsIsReady(byte *data)
+boolean gpsIsReady()
 {
     int i, c;
-      
+    
     //$1ヘッダが一致かつ,$3ステータスが有効＝A
-    if( strncmp((char *)data, head, 6) == 0 )
+    if( strncmp((char *)SentencesData, head, 6) == 0 )
     {
 
       //コンマカウント初期化
@@ -126,15 +132,19 @@ boolean gpsIsReady(byte *data)
 
       // センテンスの長さだけ繰り返す
       for (i=0 ; i<SentencesNum; i++) {
-        if (data[i] == ',') c++ ; // 区切り文字を数える
+        if (SentencesData[i] == ',') c++ ; // 区切り文字を数える
 
         if ( c == 3 ) {
              //次のコンマまでのデータを呼び出し
-             if( 'A' == readDataUntilComma(i, data) ){
+             if( "A" == readDataUntilComma(i) ){
                return true;
              }
-             else
+             else{
+               Serial.print("X:");
+               Serial.print( (char *)SentencesData );
                return false;
+             }
+               
         }
       }
     }
@@ -145,9 +155,8 @@ boolean gpsIsReady(byte *data)
 /**
   * readDataUntilComma
   */
-char *readDataUntilComma(int s, char *data)
+char* readDataUntilComma(int s)
 {
-  char buf[10];
   int i, j;
 
   j = 0;
@@ -158,16 +167,18 @@ char *readDataUntilComma(int s, char *data)
   //次のコンマが出現or特定文字*（チェックサム)が出現
   for (i = s; i < SentencesNum; i++)
   {
-    if(( data[i] == ",") || (data[i] == "*")){
+    if(( SentencesData[i] == ',') || (SentencesData[i] == '*')){
       return buf;
     }
     else{
       //バッファーのオーバフローをチェック
       if( j < 10 ) {
-        buf[j] = data[i];
+        buf[j] = SentencesData[i];
         j++;
       }
     }
   }
+
+  return buf;
   
 }
