@@ -8,6 +8,7 @@
 //=== Global ===========================================
 SoftwareSerial  g_gps( RX, TX );
 char head[] = "$GPRMC";
+char info[] = "$GPGGA";
 char buf[10];
 int SentencesNum = 0;                   // GPSのセンテンス文字列個数
 byte SentencesData[SENTENCES_BUFLEN] ;  // GPSのセンテンスデータバッファ
@@ -62,6 +63,11 @@ void loop() {
              
           // センテンスの最後(LF=0x0Aで判断)
           if (dt == 0x0a || SentencesNum >= SENTENCES_BUFLEN) {
+
+            //GPS情報の取得
+            getGpsInfo();
+
+            
             // センテンスのステータスが"有効"になるまで待つ
             if ( gpsIsReady() )
             {
@@ -77,6 +83,32 @@ void loop() {
 
 }
 
+/**
+ * getGpsInfo
+ */
+void getGpsInfo()
+{
+    int i, c;
+    
+    //$1ヘッダが一致
+    if( strncmp((char *)SentencesData, info, 6) == 0 )
+    {
+
+      //コンマカウント初期化
+      c = 1; 
+
+      // センテンスの長さだけ繰り返す
+      for (i=0 ; i<SentencesNum; i++) {
+        if (SentencesData[i] == ',') c++ ; // 区切り文字を数える
+
+        if ( c == 7 ) {
+                         
+             Serial.print("Number of Satelites:");
+             Serial.println(readDataUntilComma(i));
+        }
+      }
+    }
+}
 
 /**
  * receiveGPS
