@@ -87,6 +87,7 @@ void loop() {
 
 /**
  * getGpsInfo
+ * $GPGGA　ヘッダから、衛星受信数や時刻情報を取得
  */
 void getGpsInfo()
 {
@@ -124,46 +125,11 @@ void getGpsInfo()
     }
 }
 
-/**
- * receiveGPS
- */
-/*char *receiveGPS()
-{
-  char dt ;
-  
-  //初期化
-  memset(SentencesData, 0x00, SENTENCES_BUFLEN) ;
-
-   // センテンスデータが有るなら処理を行う
-   if (g_gps.available()) {
-        // 1バイト読み出す
-        dt = g_gps.read() ;
-
-        // センテンスの開始
-        if (dt == '$') SentencesNum = 0 ;
-        
-        if (SentencesNum >= 0) {
-          
-          // センテンスをバッファに溜める
-          SentencesData[SentencesNum] = dt ;
-          SentencesNum++ ;
-             
-          // センテンスの最後(LF=0x0Aで判断)
-          if (dt == 0x0a || SentencesNum >= SENTENCES_BUFLEN) {
-               // センテンスのステータスが"有効"になるまで待つ
-               if ( gpsIsReady(SentencesData) )
-               {
-                  // 有効になったら書込み開始
-                  return (char *)SentencesData;
-               }
-          }
-        }
-   }
- 
-}*/
 
 /**
- * gpsStatusCheck
+ * gpsIsReady
+ * GPS情報が有効かどうかを判断
+ * 項目3が"A"かどうかで判断
  */
 boolean gpsIsReady()
 {
