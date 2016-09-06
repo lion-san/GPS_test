@@ -64,6 +64,8 @@ void loop() {
           // センテンスの最後(LF=0x0Aで判断)
           if (dt == 0x0a || SentencesNum >= SENTENCES_BUFLEN) {
 
+            SentencesData[SentencesNum] = '\0' ;
+
             //GPS情報の取得
             getGpsInfo();
 
@@ -99,14 +101,26 @@ void getGpsInfo()
 
       // センテンスの長さだけ繰り返す
       for (i=0 ; i<SentencesNum; i++) {
-        if (SentencesData[i] == ',') c++ ; // 区切り文字を数える
-
-        if ( c == 7 ) {
-                         
-             Serial.print("Number of Satelites:");
-             Serial.println(readDataUntilComma(i));
+        if (SentencesData[i] == ','){
+          
+            c++ ; // 区切り文字を数える
+    
+            if ( c == 2 ) {
+                 Serial.println("----------------------------");
+                // Serial.println((char *)SentencesData);
+                 Serial.print("Time:");
+                 Serial.println(readDataUntilComma(i+1));
+                 continue;
+            }
+            else if ( c == 8 ) {
+                // Serial.println((char *)SentencesData);
+                 Serial.print("Number of Satelites:");
+                 Serial.println(readDataUntilComma(i+1));
+                 continue;
+            }
         }
       }
+      
     }
 }
 
@@ -164,21 +178,24 @@ boolean gpsIsReady()
 
       // センテンスの長さだけ繰り返す
       for (i=0 ; i<SentencesNum; i++) {
-        if (SentencesData[i] == ',') c++ ; // 区切り文字を数える
-
-        if ( c == 3 ) {
-             //次のコンマまでのデータを呼び出し
-             if( "A" == readDataUntilComma(i) ){
-               return true;
-             }
-             else{
-               Serial.print("X:");
-               Serial.print( (char *)SentencesData );
-               return false;
-             }
-               
+        if (SentencesData[i] == ','){
+              
+              c++ ; // 区切り文字を数える
+    
+            if ( c == 3 ) {
+                 //次のコンマまでのデータを呼び出し
+                 if( strncmp("A", readDataUntilComma(i+1), 1) == 0 ){
+                   return true;
+                 }
+                 else{
+                   Serial.print("X:");
+                   Serial.print( (char *)SentencesData );
+                   return false;
+                 }
+            }
         }
       }
+      
     }
 
     return false;
@@ -200,6 +217,7 @@ char* readDataUntilComma(int s)
   for (i = s; i < SentencesNum; i++)
   {
     if(( SentencesData[i] == ',') || (SentencesData[i] == '*')){
+      buf[j] = '\0';
       return buf;
     }
     else{
@@ -208,9 +226,14 @@ char* readDataUntilComma(int s)
         buf[j] = SentencesData[i];
         j++;
       }
+      else{//エラー処理
+        int x;
+        for(x = 0; x < sizeof(buf); x++)
+          buf[x] = 'X';
+          return buf;
+      }
+      
     }
   }
-
-  return buf;
   
 }
